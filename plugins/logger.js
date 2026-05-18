@@ -33,5 +33,10 @@ export default fp(async function customLogger(fastify, opts) {
   process.on('unhandledRejection', (reason, promise) => {
     fastify.log.error({ message: 'Unhandled Rejection', reason, promise })
   })
+
+  // Log all incoming request headers for better traceability
+  fastify.addHook('onRequest', async (request, reply) => {
+    fastify.log.debug({ headers: request.headers }, `[HDR] ${request.method} ${request.url}`)
+  })
 })
 ```

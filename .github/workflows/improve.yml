@@ -1,0 +1,38 @@
+name: Self-Improvement Agent
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  improve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install openai
+      - run: python agent.py
+    
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run LLM improvement agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python agent.py
+
+      - name: Commit improvements
+        run: |
+          git config user.name "self-improve-bot"
+          git config user.email "bot@noreply"
+          git diff --quiet || (git add -A && git commit -m "chore: auto-improvement $(date -u +%Y-%m-%dT%H:%M)" && git push)
+
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pytest

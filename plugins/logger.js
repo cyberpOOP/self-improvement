@@ -38,5 +38,12 @@ export default fp(async function customLogger(fastify, opts) {
   fastify.addHook('onRequest', async (request, reply) => {
     fastify.log.debug({ headers: request.headers }, `[HDR] ${request.method} ${request.url}`)
   })
+
+  // Log request body for POST, PATCH methods for better traceability
+  fastify.addHook('preHandler', async (request, reply) => {
+    if (['POST', 'PATCH'].includes(request.method)) {
+      fastify.log.debug({ body: request.body }, `[BODY] ${request.method} ${request.url}`)
+    }
+  })
 })
 ```

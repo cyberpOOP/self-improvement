@@ -5,7 +5,7 @@ REPO_URL="https://github.com/cyberpOOP/self-improvement"
 RUNNER_TOKEN=$(aws ssm get-parameter --name "/github-runner/token" --with-decryption --query Parameter.Value --output text)
 AMI_ID="ami-0122da1d0b4a30ec4" 
 INSTANCE_TYPE="t3.micro"
-IAM_PROFILE="arn:aws:iam::ACCOUNT_ID:instance-profile/ec2-runner-role"
+IAM_PROFILE="arn:aws:iam::382720393134:user/DevOps"
 SG_ID="sg-00bf47e5c03318fce"
 
 USER_DATA=$(cat <<EOF

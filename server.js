@@ -3,6 +3,7 @@ import cors from '@fastify/cors'
 import dotenv from 'dotenv'
 import customLogger from './plugins/logger.js'
 import proxy from './utils/proxy.js'
+import helmet from '@fastify/helmet'
 
 dotenv.config({ path: './.env' })
 
@@ -20,6 +21,9 @@ const fastify = Fastify({
   },
   disableRequestLogging: true
 })
+
+// Security headers
+await fastify.register(helmet)
 
 //CORS
 const corsOrigins = process.env.CORS_ORIGIN

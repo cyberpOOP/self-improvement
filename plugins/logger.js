@@ -1,3 +1,4 @@
+```js
 import fp from 'fastify-plugin'
 
 export default fp(async function customLogger(fastify, opts) {
@@ -17,6 +18,10 @@ export default fp(async function customLogger(fastify, opts) {
       stack: error.stack
     }, `[ERR] ${request.method} ${request.url} → ${reply.statusCode}`)
 
-    reply.code(500).send({ error: 'Internal Server Error' })
+    // Send error message only if not already sent
+    if (!reply.sent) {
+      reply.code(500).send({ error: 'Internal Server Error' })
+    }
   })
 })
+```

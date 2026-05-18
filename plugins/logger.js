@@ -23,5 +23,15 @@ export default fp(async function customLogger(fastify, opts) {
       reply.code(500).send({ error: 'Internal Server Error' })
     }
   })
+
+  // Log uncaught exceptions and unhandled rejections
+  process.on('uncaughtException', (err) => {
+    fastify.log.fatal({ message: 'Uncaught Exception', error: err })
+    process.exit(1)
+  })
+
+  process.on('unhandledRejection', (reason, promise) => {
+    fastify.log.error({ message: 'Unhandled Rejection', reason, promise })
+  })
 })
 ```

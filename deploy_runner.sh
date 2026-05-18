@@ -11,8 +11,12 @@ SG_ID="sg-00bf47e5c03318fce"
 
 USER_DATA=$(cat <<EOF
 #!/bin/bash
-sudo apt update -y
-sudo apt install curl -y
+sudo apt-get update -y
+sudo apt-get install -y jq curl unzip
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -o awscliv2.zip
+sudo ./aws/install
 
 # Install GitHub runner
 mkdir -p /home/ec2-user/actions-runner && cd /home/ec2-user/actions-runner
@@ -29,8 +33,17 @@ tar xzf ./actions-runner-linux-x64-2.334.0.tar.gz
 
 # Run, then self-terminate
 ./run.sh
-INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+
+TOKEN=\$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+INSTANCE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+
+REGION=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
+
+echo $INSTANCE_ID
+echo $REGION
+  
+aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \$REGION
 EOF
 )
 

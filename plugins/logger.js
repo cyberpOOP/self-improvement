@@ -128,5 +128,14 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with suspicious Referer header
+  fastify.addHook('onRequest', async (request, reply) => {
+    const referer = request.headers['referer'] || ''
+    if (referer && /javascript:|data:/i.test(referer)) {
+      fastify.log.warn(`[SEC] Suspicious Referer header detected: ${referer} on ${request.method} ${request.url}`)
+      reply.code(403).send({ error: 'Forbidden' })
+    }
+  })
 })
 ```

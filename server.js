@@ -1,3 +1,4 @@
+```js
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import dotenv from 'dotenv'
@@ -42,6 +43,16 @@ await fastify.register(customLogger)
 // Register routers
 fastify.register(proxy)
 
+// Add a simple health check route with error handling
+fastify.get('/health', async (request, reply) => {
+  try {
+    return { status: 'ok' }
+  } catch (err) {
+    fastify.log.error(err)
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {
@@ -53,3 +64,4 @@ const start = async () => {
 }
 
 start()
+```

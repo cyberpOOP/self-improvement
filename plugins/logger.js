@@ -45,5 +45,13 @@ export default fp(async function customLogger(fastify, opts) {
       fastify.log.debug({ body: request.body }, `[BODY] ${request.method} ${request.url}`)
     }
   })
+
+  // Add security: log and reject requests without Authorization header for /api routes
+  fastify.addHook('onRequest', async (request, reply) => {
+    if (request.url.startsWith('/api') && !request.headers.authorization) {
+      fastify.log.warn(`[AUTH] Missing Authorization header on ${request.method} ${request.url}`)
+      reply.code(401).send({ error: 'Unauthorized' })
+    }
+  })
 })
 ```

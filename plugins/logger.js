@@ -73,5 +73,15 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with empty body for POST and PATCH
+  fastify.addHook('preHandler', async (request, reply) => {
+    if (['POST', 'PATCH'].includes(request.method)) {
+      if (!request.body || (typeof request.body === 'object' && Object.keys(request.body).length === 0)) {
+        fastify.log.warn(`[SEC] Empty request body on ${request.method} ${request.url}`)
+        reply.code(400).send({ error: 'Bad Request: Empty body' })
+      }
+    }
+  })
 })
 ```

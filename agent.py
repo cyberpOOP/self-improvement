@@ -16,6 +16,9 @@ TARGETS = [
 DIRECTORIES = [
     "utils",
     "plugins",
+    "auth",
+    "services",
+    "mongodb_schemas"
 ]
 
 for f in TARGETS:

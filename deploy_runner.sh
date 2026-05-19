@@ -38,7 +38,7 @@ REGION=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/
 echo $INSTANCE_ID
 echo $REGION
   
-
+aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \$REGION
 EOF
 )
 

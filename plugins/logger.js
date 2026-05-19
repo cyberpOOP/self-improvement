@@ -116,5 +116,17 @@ export default fp(async function customLogger(fastify, opts) {
       reply.code(414).send({ error: 'Request-URI Too Long' })
     }
   })
+
+  // Add security: reject requests with query parameters containing non-ASCII characters
+  fastify.addHook('onRequest', async (request, reply) => {
+    for (const key in request.query) {
+      const value = request.query[key]
+      if (typeof value === 'string' && /[^\x00-\x7F]/.test(value)) {
+        fastify.log.warn(`[SEC] Non-ASCII characters detected in query parameter: ${key}=${value} on ${request.method} ${request.url}`)
+        reply.code(400).send({ error: 'Bad Request: Invalid characters in query parameter' })
+        return
+      }
+    }
+  })
 })
 ```

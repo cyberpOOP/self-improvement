@@ -53,5 +53,14 @@ export default fp(async function customLogger(fastify, opts) {
       reply.code(401).send({ error: 'Unauthorized' })
     }
   })
+
+  // Add security: reject requests with suspicious User-Agent header
+  fastify.addHook('onRequest', async (request, reply) => {
+    const userAgent = request.headers['user-agent'] || ''
+    if (/sqlmap|curl|nikto|fuzz/i.test(userAgent)) {
+      fastify.log.warn(`[SEC] Suspicious User-Agent detected: ${userAgent} on ${request.method} ${request.url}`)
+      reply.code(403).send({ error: 'Forbidden' })
+    }
+  })
 })
 ```

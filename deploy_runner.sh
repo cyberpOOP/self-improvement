@@ -9,7 +9,7 @@ IAM_PROFILE="arn:aws:iam::382720393134:instance-profile/DevOps"
 SUBNET_ID="subnet-06c745492d10280f2"
 SG_ID="sg-00bf47e5c03318fce"
 
-USER_DATA=$(cat <<EOF
+USER_DATA=$(cat <<'EOF'
 #!/bin/bash
 sudo apt-get update -y
 sudo apt-get install -y jq curl unzip
@@ -19,26 +19,27 @@ unzip -o awscliv2.zip
 sudo ./aws/install
 
 # Install GitHub runner
-mkdir -p /home/ec2-user/actions-runner && cd /home/ec2-user/actions-runner
+sudo useradd -m ec2-user
+sudo -u ec2-user -i
+cd ~
 curl -o actions-runner-linux-x64-2.334.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.334.0/actions-runner-linux-x64-2.334.0.tar.gz
 tar xzf ./actions-runner-linux-x64-2.334.0.tar.gz
 
+AUTH_TOKEN=$(aws ssm get-parameter --name "runner-token" --with-decryption --query Parameter.Value --output text)
+
 # Register runner (ephemeral = de-registers after one job)
-./config.sh --url $REPO_URL --token $RUNNER_TOKEN --name "ephemeral-\$(hostname)" --ephemeral --unattended
+RUNNER_ALLOW_RUNASROOT=true ./config.sh --url https://github.com/cyberpOOP/self-improvement --token $AUTH_TOKEN --name "ephemeral-$(hostname)" --ephemeral --unattended
 
 # Run, then self-terminate
-./run.sh
+RUNNER_ALLOW_RUNASROOT=true ./run.sh
 
-TOKEN=\$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
-INSTANCE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
 
-REGION=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
+REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
 
-echo $INSTANCE_ID
-echo $REGION
-  
-aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \$REGION
+aws ec2 terminate-instances --instance-ids $INSTANCE_ID --region $REGION
 EOF
 )
 

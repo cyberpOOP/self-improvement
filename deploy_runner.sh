@@ -24,12 +24,7 @@ curl -o actions-runner-linux-x64-2.334.0.tar.gz -L https://github.com/actions/ru
 tar xzf ./actions-runner-linux-x64-2.334.0.tar.gz
 
 # Register runner (ephemeral = de-registers after one job)
-./config.sh \
-  --url $REPO_URL \
-  --token $RUNNER_TOKEN \
-  --name "ephemeral-\$(hostname)" \
-  --ephemeral \
-  --unattended
+./config.sh --url $REPO_URL --token $RUNNER_TOKEN --name "ephemeral-\$(hostname)" --ephemeral --unattended
 
 # Run, then self-terminate
 ./run.sh
@@ -43,7 +38,7 @@ REGION=\$(curl -s -H "X-aws-ec2-metadata-token: \$TOKEN" http://169.254.169.254/
 echo $INSTANCE_ID
 echo $REGION
   
-aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \$REGION
+
 EOF
 )
 

@@ -149,5 +149,18 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with query parameters containing JavaScript event handlers (simple XSS detection)
+  fastify.addHook('onRequest', async (request, reply) => {
+    const xssPattern = /on\w+=/i
+    for (const key in request.query) {
+      const value = request.query[key]
+      if (typeof value === 'string' && xssPattern.test(value)) {
+        fastify.log.warn(`[SEC] Possible XSS attack detected in query parameter: ${key}=${value} on ${request.method} ${request.url}`)
+        reply.code(400).send({ error: 'Bad Request: Suspicious query parameter' })
+        return
+      }
+    }
+  })
 })
 ```

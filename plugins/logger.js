@@ -83,5 +83,18 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with query parameters containing suspicious characters
+  fastify.addHook('onRequest', async (request, reply) => {
+    const suspiciousPattern = /['";--]/ // simple pattern to detect SQL injection attempts
+    for (const key in request.query) {
+      const value = request.query[key]
+      if (typeof value === 'string' && suspiciousPattern.test(value)) {
+        fastify.log.warn(`[SEC] Suspicious query parameter detected: ${key}=${value} on ${request.method} ${request.url}`)
+        reply.code(400).send({ error: 'Bad Request: Suspicious query parameter' })
+        return
+      }
+    }
+  })
 })
 ```

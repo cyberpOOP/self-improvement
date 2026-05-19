@@ -96,5 +96,17 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with query parameters containing spaces (common in injection attempts)
+  fastify.addHook('onRequest', async (request, reply) => {
+    for (const key in request.query) {
+      const value = request.query[key]
+      if (typeof value === 'string' && /\s/.test(value)) {
+        fastify.log.warn(`[SEC] Suspicious query parameter with spaces detected: ${key}=${value} on ${request.method} ${request.url}`)
+        reply.code(400).send({ error: 'Bad Request: Suspicious query parameter' })
+        return
+      }
+    }
+  })
 })
 ```

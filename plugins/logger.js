@@ -20,7 +20,7 @@ export default fp(async function customLogger(fastify, opts) {
 
     // Send error message only if not already sent
     if (!reply.sent) {
-      reply.code(500).send({ error: 'Internal Server Error' })
+      reply.code(error.statusCode || 500).send({ error: error.message || 'Internal Server Error' })
     }
   })
 

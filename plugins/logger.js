@@ -108,5 +108,13 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // Add security: reject requests with excessively long URLs to prevent DoS attacks
+  fastify.addHook('onRequest', async (request, reply) => {
+    if (request.raw.url && request.raw.url.length > 2048) {
+      fastify.log.warn(`[SEC] Request URL too long: length ${request.raw.url.length} on ${request.method} ${request.url}`)
+      reply.code(414).send({ error: 'Request-URI Too Long' })
+    }
+  })
 })
 ```

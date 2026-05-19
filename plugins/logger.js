@@ -62,5 +62,16 @@ export default fp(async function customLogger(fastify, opts) {
       reply.code(403).send({ error: 'Forbidden' })
     }
   })
+
+  // Add security: reject requests with missing or invalid Content-Type header for POST and PATCH
+  fastify.addHook('onRequest', async (request, reply) => {
+    if (['POST', 'PATCH'].includes(request.method)) {
+      const contentType = request.headers['content-type'] || ''
+      if (!contentType.includes('application/json')) {
+        fastify.log.warn(`[SEC] Invalid Content-Type header: ${contentType} on ${request.method} ${request.url}`)
+        reply.code(415).send({ error: 'Unsupported Media Type' })
+      }
+    }
+  })
 })
 ```

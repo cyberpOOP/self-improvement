@@ -59,6 +59,11 @@ fastify.setErrorHandler((error, request, reply) => {
   reply.code(error.statusCode || 500).send({ error: error.message || 'Internal Server Error' })
 })
 
+// Add a not found handler for unmatched routes
+fastify.setNotFoundHandler((request, reply) => {
+  reply.code(404).send({ error: 'Not Found' })
+})
+
 // Start server
 const start = async () => {
   try {

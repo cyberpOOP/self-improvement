@@ -53,6 +53,12 @@ fastify.get('/health', async (request, reply) => {
   }
 })
 
+// Add centralized error handler for uncaught errors in routes
+fastify.setErrorHandler((error, request, reply) => {
+  fastify.log.error(error)
+  reply.code(error.statusCode || 500).send({ error: error.message || 'Internal Server Error' })
+})
+
 // Start server
 const start = async () => {
   try {

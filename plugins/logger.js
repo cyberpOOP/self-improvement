@@ -162,5 +162,25 @@ export default fp(async function customLogger(fastify, opts) {
       }
     }
   })
+
+  // New addition: Log response payload size for all responses
+  fastify.addHook('onSend', async (request, reply, payload) => {
+    let size = 0
+    if (payload) {
+      if (typeof payload === 'string') {
+        size = Buffer.byteLength(payload)
+      } else if (Buffer.isBuffer(payload)) {
+        size = payload.length
+      } else if (typeof payload === 'object') {
+        try {
+          size = Buffer.byteLength(JSON.stringify(payload))
+        } catch {
+          size = 0
+        }
+      }
+    }
+    fastify.log.info(`[RES-SIZE] ${request.method} ${request.url} -> ${reply.statusCode} (${size} bytes)`)
+    return payload
+  })
 })
 ```

@@ -86,6 +86,12 @@ fastify.addHook('onRequest', async (request, reply) => {
   fastify.log.info(`[IP] ${ip} - ${request.method} ${request.url}`)
 })
 
+// New addition: Add a global onResponse hook to log response time for all requests
+fastify.addHook('onResponse', async (request, reply) => {
+  const responseTime = reply.getResponseTime()
+  fastify.log.info(`[RT] ${request.method} ${request.url} -> ${reply.statusCode} - ${responseTime.toFixed(2)} ms`)
+})
+
 // Start server
 const start = async () => {
   try {

@@ -64,6 +64,14 @@ fastify.setNotFoundHandler((request, reply) => {
   reply.code(404).send({ error: 'Not Found' })
 })
 
+// Add a global onSend hook to add security headers for all responses
+fastify.addHook('onSend', async (request, reply, payload) => {
+  reply.header('X-Content-Type-Options', 'nosniff')
+  reply.header('X-Frame-Options', 'DENY')
+  reply.header('Referrer-Policy', 'no-referrer')
+  return payload
+})
+
 // Start server
 const start = async () => {
   try {

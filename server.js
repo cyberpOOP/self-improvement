@@ -148,6 +148,15 @@ fastify.addHook('onRequest', async (request, reply) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with User-Agent header containing suspicious substrings (enhanced security)
+fastify.addHook('onRequest', async (request, reply) => {
+  const userAgent = request.headers['user-agent'] || ''
+  if (/sqlmap|curl|nikto|fuzz/i.test(userAgent)) {
+    fastify.log.warn(`[SEC] Suspicious User-Agent detected: ${userAgent} on ${request.method} ${request.url}`)
+    reply.code(403).send({ error: 'Forbidden' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {

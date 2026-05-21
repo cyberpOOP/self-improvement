@@ -129,6 +129,17 @@ fastify.addHook('preParsing', async (request, reply, payload) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with missing or empty Authorization header on /api routes (enhanced security)
+fastify.addHook('onRequest', async (request, reply) => {
+  if (request.url.startsWith('/api')) {
+    const authHeader = request.headers.authorization
+    if (!authHeader || authHeader.trim() === '') {
+      fastify.log.warn(`[AUTH] Empty or missing Authorization header on ${request.method} ${request.url}`)
+      reply.code(401).send({ error: 'Unauthorized' })
+    }
+  }
+})
+
 // Start server
 const start = async () => {
   try {

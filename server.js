@@ -92,6 +92,15 @@ fastify.addHook('onResponse', async (request, reply) => {
   fastify.log.info(`[RT] ${request.method} ${request.url} -> ${reply.statusCode} - ${responseTime.toFixed(2)} ms`)
 })
 
+// New addition: Add a global onRequest hook to limit request body size to 1MB for security
+fastify.addHook('onRequest', async (request, reply) => {
+  const contentLength = request.headers['content-length']
+  if (contentLength && Number(contentLength) > 1_000_000) {
+    fastify.log.warn(`[SEC] Request body too large: ${contentLength} bytes on ${request.method} ${request.url}`)
+    reply.code(413).send({ error: 'Payload Too Large' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {

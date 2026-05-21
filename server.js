@@ -101,6 +101,34 @@ fastify.addHook('onRequest', async (request, reply) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with invalid JSON body (syntax errors)
+fastify.addHook('preParsing', async (request, reply, payload) => {
+  if (request.headers['content-type']?.includes('application/json')) {
+    try {
+      await new Promise((resolve, reject) => {
+        let data = ''
+        payload.on('data', chunk => {
+          data += chunk
+        })
+        payload.on('end', () => {
+          try {
+            JSON.parse(data)
+            resolve()
+          } catch (err) {
+            reject(err)
+          }
+        })
+        payload.on('error', err => {
+          reject(err)
+        })
+      })
+    } catch (err) {
+      fastify.log.warn(`[SEC] Invalid JSON body on ${request.method} ${request.url}: ${err.message}`)
+      reply.code(400).send({ error: 'Bad Request: Invalid JSON' })
+    }
+  }
+})
+
 // Start server
 const start = async () => {
   try {

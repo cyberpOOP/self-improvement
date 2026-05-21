@@ -79,7 +79,6 @@ fastify.addHook('onRequest', async (request, reply) => {
     reply.code(401).send({ error: 'Unauthorized' })
   }
 })
-
 // Add global onRequest hook to log request IP address for all requests (enhanced logging)
 fastify.addHook('onRequest', async (request, reply) => {
   const ip = request.ip || request.raw.socket.remoteAddress

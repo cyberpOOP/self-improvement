@@ -139,6 +139,15 @@ fastify.addHook('onRequest', async (request, reply) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with HTTP methods other than GET, POST, PATCH, DELETE, OPTIONS (basic method filtering)
+fastify.addHook('onRequest', async (request, reply) => {
+  const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
+  if (!allowedMethods.includes(request.method)) {
+    fastify.log.warn(`[SEC] Method Not Allowed: ${request.method} on ${request.url}`)
+    reply.code(405).send({ error: 'Method Not Allowed' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {

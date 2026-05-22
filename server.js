@@ -157,6 +157,15 @@ fastify.addHook('onRequest', async (request, reply) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with User-Agent header missing (enhanced security)
+fastify.addHook('onRequest', async (request, reply) => {
+  const userAgent = request.headers['user-agent']
+  if (!userAgent) {
+    fastify.log.warn(`[SEC] Missing User-Agent header on ${request.method} ${request.url}`)
+    reply.code(400).send({ error: 'Bad Request: Missing User-Agent header' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {

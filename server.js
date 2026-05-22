@@ -166,6 +166,15 @@ fastify.addHook('onRequest', async (request, reply) => {
   }
 })
 
+// New addition: Add a global onRequest hook to reject requests with suspicious Referer header (security improvement)
+fastify.addHook('onRequest', async (request, reply) => {
+  const referer = request.headers['referer'] || ''
+  if (referer && /javascript:|data:/i.test(referer)) {
+    fastify.log.warn(`[SEC] Suspicious Referer header detected: ${referer} on ${request.method} ${request.url}`)
+    reply.code(403).send({ error: 'Forbidden' })
+  }
+})
+
 // Start server
 const start = async () => {
   try {
